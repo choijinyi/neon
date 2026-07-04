@@ -1,5 +1,5 @@
-import {Download, Pause, Play, RotateCcw} from 'lucide-react';
-import {useMemo} from 'react';
+import {Clapperboard, Download, Loader2, Pause, Play, RotateCcw} from 'lucide-react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {useYouTubePlayer} from '../hooks/useYouTubePlayer';
 import type {Highlight} from '../types';
 import {buildSrt, downloadTextFile, formatTime} from '../utils/youtube';
@@ -21,6 +21,17 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
       endSeconds: highlight.endSeconds,
     });
 
+  const [rendering, setRendering] = useState(false);
+  const [receivedMb, setReceivedMb] = useState(0);
+  const [renderError, setRenderError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // 다른 하이라이트로 바꾸면 진행 중인 MP4 생성을 취소
+  useEffect(() => {
+    setRenderError(null);
+    return () => abortRef.current?.abort();
+  }, [videoId, highlight]);
+
   const activeSubtitle = useMemo(
     () =>
       highlight.subtitles.find(
@@ -38,6 +49,72 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
   const handleSrtDownload = () => {
     const srt = buildSrt(highlight.subtitles, highlight.startSeconds);
     downloadTextFile(`${highlight.title.replace(/\s+/g, '_')}.srt`, srt);
+  };
+
+  const handleMp4Download = async () => {
+    setRenderError(null);
+    setRendering(true);
+    setReceivedMb(0);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      const res = await fetch('/api/render', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          videoId,
+          title: highlight.title,
+          startSeconds: highlight.startSeconds,
+          endSeconds: highlight.endSeconds,
+          subtitles: highlight.subtitles,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => null);
+        throw new Error(
+          data?.error ??
+            (res.status === 404
+              ? 'MP4 생성은 배포된 사이트에서만 동작합니다.'
+              : 'MP4 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.'),
+        );
+      }
+
+      // 스트리밍 수신 + 진행 표시
+      const reader = res.body.getReader();
+      const chunks: BlobPart[] = [];
+      let received = 0;
+      for (;;) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        if (value) {
+          chunks.push(value);
+          received += value.byteLength;
+          setReceivedMb(received / (1024 * 1024));
+        }
+      }
+      if (received === 0) {
+        throw new Error('MP4 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      }
+
+      const blob = new Blob(chunks, {type: 'video/mp4'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${highlight.title.replace(/\s+/g, '_')}.mp4`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      if (!(e instanceof DOMException && e.name === 'AbortError')) {
+        console.error(e);
+        setRenderError(
+          e instanceof Error ? e.message : 'MP4 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+        );
+      }
+    } finally {
+      setRendering(false);
+    }
   };
 
   return (
@@ -95,7 +172,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
       </div>
 
       {/* 컨트롤 */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <button
           type="button"
           onClick={playing ? pause : play}
@@ -121,6 +198,36 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
           자막(SRT)
         </button>
       </div>
+
+      {/* MP4 생성 */}
+      <button
+        type="button"
+        onClick={handleMp4Download}
+        disabled={rendering}
+        className="w-full max-w-[340px] flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-extrabold disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+      >
+        {rendering ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            MP4 만드는 중... {receivedMb > 0 && `(${receivedMb.toFixed(1)}MB)`}
+          </>
+        ) : (
+          <>
+            <Clapperboard className="w-5 h-5" />
+            자막 입힌 MP4 다운로드
+          </>
+        )}
+      </button>
+      {rendering && (
+        <p className="text-stone-500 text-xs -mt-2 break-keep">
+          영상 길이에 따라 1~4분 정도 걸립니다. 창을 닫지 마세요.
+        </p>
+      )}
+      {renderError && (
+        <p className="max-w-[340px] text-center text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3 break-keep">
+          {renderError}
+        </p>
+      )}
 
       <p className="text-stone-400 text-xs">
         구간 {formatTime(highlight.startSeconds)} ~ {formatTime(highlight.endSeconds)} ·{' '}
