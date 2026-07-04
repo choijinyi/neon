@@ -1,20 +1,25 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 설교 쇼츠 자동 생성기
 
-# Run and deploy your AI Studio app
+설교 유튜브 링크를 입력하면 Gemini AI가 영상을 분석해서:
 
-This contains everything you need to run your app locally.
+1. **하이라이트 구간 3개**를 자동으로 찾고
+2. **설교 내용을 받아쓴 자막**을 입혀서
+3. **세로(9:16) 쇼츠 미리보기**로 보여줍니다.
 
-View your app in AI Studio: https://ai.studio/apps/8bb048fb-c30a-4fd0-851b-447c9b935f10
+쇼츠 길이는 **30초 / 1분 / 3분** 중에서 선택할 수 있고,
+자막은 SRT 파일로 내려받아 프리미어·캡컷 등 편집 프로그램에서 바로 쓸 수 있습니다.
 
-## Run Locally
+## 로컬 실행
 
-**Prerequisites:**  Node.js
+**필요한 것:** Node.js
 
-
-1. Install dependencies:
+1. 의존성 설치:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. `.env.local` 파일에 Gemini API 키 설정:
+   `GEMINI_API_KEY=발급받은_키`
+3. 앱 실행:
    `npm run dev`
+
+---
+
+만든이 **한국AI교육협회 최진이회장** · 010-4009-0191
