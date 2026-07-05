@@ -9,7 +9,18 @@ export interface YTPlayer {
   getPlayerState(): number;
   mute(): void;
   unMute(): void;
+  unloadModule(module: string): void;
   destroy(): void;
+}
+
+/** 유튜브 자체 자막(CC)을 끈다. 우리 자막과 이중으로 표시되는 것 방지 */
+function disableYouTubeCaptions(player: YTPlayer) {
+  try {
+    player.unloadModule('captions'); // html5 플레이어
+    player.unloadModule('cc'); // 구형 플레이어
+  } catch {
+    // 자막 모듈이 없는 영상이면 무시
+  }
 }
 
 declare global {
@@ -81,10 +92,15 @@ export function useYouTubePlayer({videoId, startSeconds, endSeconds}: Options) {
           onReady: () => {
             if (cancelled) return;
             playerRef.current = player;
+            if (player) disableYouTubeCaptions(player);
             setReady(true);
           },
           onStateChange: (e: {data: number}) => {
             if (cancelled || !window.YT) return;
+            // 재생이 시작될 때마다 유튜브 자막이 다시 켜질 수 있어 반복해서 끈다
+            if (player && e.data === window.YT.PlayerState.PLAYING) {
+              disableYouTubeCaptions(player);
+            }
             setPlaying(e.data === window.YT.PlayerState.PLAYING);
           },
         },
