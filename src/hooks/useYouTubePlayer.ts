@@ -56,20 +56,29 @@ interface Options {
   videoId: string;
   startSeconds: number;
   endSeconds: number;
+  /** false면 구간 끝에서 반복하지 않고 일시정지 후 onSegmentEnd 호출 */
+  loop?: boolean;
+  onSegmentEnd?: () => void;
 }
 
 /**
  * 하이라이트 구간을 반복 재생하는 유튜브 플레이어.
  * currentTime을 폴링해 자막 동기화에 쓴다.
  */
-export function useYouTubePlayer({videoId, startSeconds, endSeconds}: Options) {
+export function useYouTubePlayer({
+  videoId,
+  startSeconds,
+  endSeconds,
+  loop = true,
+  onSegmentEnd,
+}: Options) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(startSeconds);
-  const rangeRef = useRef({start: startSeconds, end: endSeconds});
-  rangeRef.current = {start: startSeconds, end: endSeconds};
+  const rangeRef = useRef({start: startSeconds, end: endSeconds, loop, onSegmentEnd});
+  rangeRef.current = {start: startSeconds, end: endSeconds, loop, onSegmentEnd};
 
   useEffect(() => {
     let cancelled = false;
@@ -131,9 +140,14 @@ export function useYouTubePlayer({videoId, startSeconds, endSeconds}: Options) {
       if (!player) return;
       const t = player.getCurrentTime();
       setCurrentTime(t);
-      const {start, end} = rangeRef.current;
+      const {start, end, loop: shouldLoop, onSegmentEnd: onEnd} = rangeRef.current;
       if (t >= end || t < start - 1) {
-        player.seekTo(start, true);
+        if (shouldLoop) {
+          player.seekTo(start, true);
+        } else if (t >= end && player.getPlayerState() === window.YT?.PlayerState.PLAYING) {
+          player.pauseVideo();
+          onEnd?.();
+        }
       }
     }, 200);
     return () => window.clearInterval(id);
