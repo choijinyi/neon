@@ -1,6 +1,11 @@
 import {GoogleGenAI} from '@google/genai';
 import type {AnalysisResult, DurationSeconds} from '../types';
-import {ANALYSIS_MODEL, buildPrompt, parseAnalysis, responseSchema} from './analysisCore';
+import {
+  ANALYSIS_MODEL,
+  buildPrompt,
+  parseAnalysis,
+  responseSchema,
+} from '../../api/_lib/analysisCore';
 
 /**
  * 설교 영상 분석.

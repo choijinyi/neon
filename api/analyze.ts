@@ -5,7 +5,7 @@ import {
   buildPrompt,
   parseAnalysis,
   responseSchema,
-} from '../src/services/analysisCore';
+} from './_lib/analysisCore.js';
 import type {DurationSeconds} from '../src/types';
 
 export const config = {
