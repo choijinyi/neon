@@ -41,7 +41,7 @@
   *{box-sizing:border-box}
   body{
     margin:0; background:var(--paper); color:var(--ink);
-    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic","NanumGothic",system-ui,sans-serif;
     line-height:1.5; -webkit-text-size-adjust:100%;
   }
   .wrap{max-width:740px; margin:0 auto; padding:32px 20px 56px}
@@ -123,6 +123,22 @@
     .wrap{padding:24px 12px 48px}
     .step{grid-template-columns:50px 1fr}
   }
+  .pdf-btn{
+    position:fixed; right:18px; bottom:18px; z-index:10;
+    display:inline-flex; align-items:center; gap:8px;
+    font:inherit; font-size:.9rem; font-weight:700; color:#fff;
+    background:var(--famA); border:none; border-radius:999px;
+    padding:11px 18px; cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.22);
+  }
+  .pdf-btn:hover{filter:brightness(1.08)}
+  .pdf-btn:focus-visible{outline:3px solid var(--route); outline-offset:2px}
+  .pdf-hint{
+    position:fixed; right:18px; bottom:64px; z-index:10;
+    font-size:.72rem; color:var(--sub); background:var(--card);
+    border:1px solid var(--line); border-radius:6px; padding:4px 9px;
+    box-shadow:0 2px 8px rgba(0,0,0,.12); display:none;
+  }
   @media print{
     body{background:#fff}
     .wrap{max-width:none; padding:0}
@@ -130,6 +146,7 @@
     .steps{gap:8px}
     .body{padding:8px 12px 10px}
     .m{min-height:30px}
+    .pdf-btn,.pdf-hint{display:none !important}
   }
 </style>
 
@@ -302,3 +319,15 @@
 
   <footer>코드·구성 정리용 차트입니다. 멜로디와 가사는 원본 악보(ⓒ Onnuri Vision)를 참조하세요.</footer>
 </div>
+
+<span class="pdf-hint" id="pdfHint">인쇄 창에서 대상을 “PDF로 저장”으로 선택하세요</span>
+<button class="pdf-btn" type="button" id="pdfBtn" aria-describedby="pdfHint">🖨️ PDF로 저장</button>
+<script>
+  var btn = document.getElementById('pdfBtn');
+  var hint = document.getElementById('pdfHint');
+  btn.addEventListener('click', function(){ window.print(); });
+  btn.addEventListener('mouseenter', function(){ hint.style.display = 'block'; });
+  btn.addEventListener('mouseleave', function(){ hint.style.display = 'none'; });
+  btn.addEventListener('focus', function(){ hint.style.display = 'block'; });
+  btn.addEventListener('blur', function(){ hint.style.display = 'none'; });
+</script>
