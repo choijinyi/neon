@@ -1,4 +1,4 @@
-import {Clapperboard, Link2, Loader2, Wand2} from 'lucide-react';
+import {Clapperboard, Eye, EyeOff, KeyRound, Link2, Loader2, Wand2} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import Footer from './components/Footer';
 import HighlightList from './components/HighlightList';
@@ -21,7 +21,11 @@ const LOADING_MESSAGES = [
   '거의 다 됐습니다. 조금만 기다려 주세요...',
 ];
 
+const API_KEY_STORAGE = 'gemini_api_key';
+
 export default function App() {
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem(API_KEY_STORAGE) ?? '');
+  const [showKey, setShowKey] = useState(false);
   const [url, setUrl] = useState('');
   const [duration, setDuration] = useState<DurationSeconds>(60);
   const [loading, setLoading] = useState(false);
@@ -41,6 +45,11 @@ export default function App() {
     return () => window.clearInterval(id);
   }, [loading]);
 
+  const handleApiKeyChange = (value: string) => {
+    setApiKey(value);
+    localStorage.setItem(API_KEY_STORAGE, value.trim());
+  };
+
   const handleAnalyze = async () => {
     setError(null);
     const id = extractVideoId(url);
@@ -51,17 +60,24 @@ export default function App() {
     setLoading(true);
     setResult(null);
     try {
-      const analysis = await analyzeSermon(`https://www.youtube.com/watch?v=${id}`, duration);
+      const analysis = await analyzeSermon(
+        `https://www.youtube.com/watch?v=${id}`,
+        duration,
+        apiKey,
+      );
       setVideoId(id);
       setResult(analysis);
       setSelectedIndex(0);
     } catch (e) {
       console.error(e);
-      setError(
-        e instanceof Error && e.message.includes('하이라이트')
-          ? e.message
-          : '영상 분석에 실패했습니다. 공개된 유튜브 영상인지 확인하고 다시 시도해 주세요.',
-      );
+      const msg = e instanceof Error ? e.message : '';
+      if (/API key|API_KEY|PERMISSION_DENIED/i.test(msg)) {
+        setError('API 키가 올바르지 않습니다. 키를 다시 확인해 주세요.');
+      } else if (msg.includes('하이라이트') || msg.includes('API 키')) {
+        setError(msg);
+      } else {
+        setError('영상 분석에 실패했습니다. 공개된 유튜브 영상인지 확인하고 다시 시도해 주세요.');
+      }
     } finally {
       setLoading(false);
     }
@@ -88,8 +104,47 @@ export default function App() {
         {/* 입력 영역 */}
         <section className="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-7 space-y-5">
           <div>
+            <label htmlFor="api-key" className="block text-sm font-semibold text-stone-300 mb-2">
+              1. Gemini API 키{' '}
+              {apiKey.trim() && <span className="text-emerald-400 font-normal">✓ 저장됨</span>}
+            </label>
+            <div className="relative">
+              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+              <input
+                id="api-key"
+                type={showKey ? 'text' : 'password'}
+                value={apiKey}
+                onChange={(e) => handleApiKeyChange(e.target.value)}
+                placeholder="AIza..."
+                autoComplete="off"
+                className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-stone-950/70 border border-white/10 text-white placeholder-stone-600 outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 transition-all"
+              />
+              <button
+                type="button"
+                aria-label={showKey ? '키 숨기기' : '키 보기'}
+                onClick={() => setShowKey((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-500 hover:text-stone-300 transition-colors"
+              >
+                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="mt-1.5 text-xs text-stone-500 break-keep">
+              한 번 입력하면 이 브라우저에 저장됩니다. 키가 없으면{' '}
+              <a
+                href="https://aistudio.google.com/apikey"
+                target="_blank"
+                rel="noreferrer"
+                className="text-amber-400/90 hover:text-amber-300 underline underline-offset-2"
+              >
+                여기서 무료 발급
+              </a>
+              받으세요 (구글 로그인 → Create API Key)
+            </p>
+          </div>
+
+          <div>
             <label htmlFor="youtube-url" className="block text-sm font-semibold text-stone-300 mb-2">
-              1. 설교 유튜브 링크
+              2. 설교 유튜브 링크
             </label>
             <div className="relative">
               <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
@@ -106,7 +161,7 @@ export default function App() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-stone-300 mb-2">2. 쇼츠 길이</p>
+            <p className="text-sm font-semibold text-stone-300 mb-2">3. 쇼츠 길이</p>
             <div className="grid grid-cols-3 gap-2">
               {DURATION_OPTIONS.map((opt) => (
                 <button
