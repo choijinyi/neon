@@ -1,0 +1,304 @@
+<title>시선 — 진행 순서표</title>
+<style>
+  :root{
+    --paper:#F6F6F2; --card:#FFFFFF; --ink:#20242B; --sub:#6B7078; --line:#DDDDD6;
+    --neu:#6B7078; --neu-bg:#EEEEE9;
+    --famA:#34558B; --famA-bg:#EAEFF7;
+    --famB:#17705B; --famB-bg:#E7F2EE;
+    --famC:#6E4AAE; --famC-bg:#F0EBF8;
+    --route:#8A5A0F; --route-bg:#F7EFDF;
+    --end-bg:#FBFBF7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15171C; --card:#1D2026; --ink:#E9E9E3; --sub:#9BA0A8; --line:#33373E;
+      --neu:#A3A8B0; --neu-bg:#282B31;
+      --famA:#8FAEE0; --famA-bg:#232B3A;
+      --famB:#6FC5AD; --famB-bg:#1F2F2A;
+      --famC:#B99AE8; --famC-bg:#2C2536;
+      --route:#D9A84E; --route-bg:#2C2617;
+      --end-bg:#22252B;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#15171C; --card:#1D2026; --ink:#E9E9E3; --sub:#9BA0A8; --line:#33373E;
+    --neu:#A3A8B0; --neu-bg:#282B31;
+    --famA:#8FAEE0; --famA-bg:#232B3A;
+    --famB:#6FC5AD; --famB-bg:#1F2F2A;
+    --famC:#B99AE8; --famC-bg:#2C2536;
+    --route:#D9A84E; --route-bg:#2C2617;
+    --end-bg:#22252B;
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F6F2; --card:#FFFFFF; --ink:#20242B; --sub:#6B7078; --line:#DDDDD6;
+    --neu:#6B7078; --neu-bg:#EEEEE9;
+    --famA:#34558B; --famA-bg:#EAEFF7;
+    --famB:#17705B; --famB-bg:#E7F2EE;
+    --famC:#6E4AAE; --famC-bg:#F0EBF8;
+    --route:#8A5A0F; --route-bg:#F7EFDF;
+    --end-bg:#FBFBF7;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    line-height:1.5; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:740px; margin:0 auto; padding:32px 20px 56px}
+
+  header.top h1{font-size:2rem; margin:0; letter-spacing:-.01em}
+  header.top .sub{color:var(--sub); margin:2px 0 14px; font-size:.95rem}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px}
+  .chip{
+    font-size:.8rem; font-weight:600; padding:3px 10px; border-radius:999px;
+    background:var(--card); border:1px solid var(--line); color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .order{
+    background:var(--card); border:1px solid var(--line); border-radius:8px;
+    padding:10px 14px; margin:14px 0 6px; font-size:.9rem;
+  }
+  .order .lbl{display:block; font-size:.7rem; font-weight:700; letter-spacing:.08em; color:var(--sub); text-transform:uppercase; margin-bottom:2px}
+  .order code{font-family:ui-monospace,"SF Mono",Consolas,monospace; font-size:.88rem; word-break:keep-all}
+  .note{color:var(--sub); font-size:.83rem; margin:8px 0 0}
+
+  .steps{display:flex; flex-direction:column; gap:12px; margin-top:24px}
+  .step{
+    display:grid; grid-template-columns:64px 1fr; gap:0;
+    background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+  }
+  .rail{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    padding:12px 8px; border-right:1px solid var(--line); background:var(--fbg,var(--neu-bg));
+  }
+  .num{font-size:.72rem; font-weight:600; color:var(--sub); font-variant-numeric:tabular-nums}
+  .badge{
+    font-family:ui-monospace,Consolas,monospace; font-weight:700; font-size:1.05rem;
+    color:var(--fam,var(--neu)); line-height:1;
+  }
+  .body{padding:12px 16px 14px}
+  .head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 10px; margin-bottom:8px}
+  .head h2{font-size:1.02rem; margin:0; font-weight:700}
+  .bars{font-size:.8rem; color:var(--sub); font-variant-numeric:tabular-nums}
+  .cue{font-size:.8rem; color:var(--sub); font-style:normal}
+  .cue::before{content:"♪ "}
+
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:5px}
+  .m{
+    border:1px solid var(--line); border-radius:6px; background:var(--paper);
+    min-height:40px; display:flex; align-items:center; justify-content:center; gap:6px;
+    font-family:ui-monospace,"SF Mono",Consolas,monospace; font-weight:700; font-size:.95rem;
+    padding:4px 2px; text-align:center; font-variant-numeric:tabular-nums;
+  }
+  .m small{font-weight:700; font-size:.72em}
+  .m.cont{color:var(--sub); font-weight:500; background:transparent}
+  .m.end{border-color:var(--fam,var(--neu)); border-style:dashed; background:var(--end-bg); position:relative}
+  .m.end.first::after{
+    content:attr(data-tag); position:absolute; top:-9px; left:6px;
+    font-family:inherit; font-size:.62rem; font-weight:700; color:var(--fam,var(--neu));
+    background:var(--card); padding:0 5px; border-radius:4px; letter-spacing:.02em;
+  }
+  .route{
+    margin:10px 0 0; font-size:.84rem; font-weight:600; color:var(--route);
+    background:var(--route-bg); border-radius:6px; padding:6px 10px; display:inline-block;
+  }
+  .route.endsong{font-weight:700}
+
+  .step[data-fam="a"]{--fam:var(--famA); --fbg:var(--famA-bg)}
+  .step[data-fam="b"]{--fam:var(--famB); --fbg:var(--famB-bg)}
+  .step[data-fam="c"]{--fam:var(--famC); --fbg:var(--famC-bg)}
+
+  .legend{
+    margin-top:28px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 18px;
+  }
+  .legend h3{margin:0 0 8px; font-size:.85rem; letter-spacing:.06em; color:var(--sub); text-transform:uppercase}
+  .legend ul{margin:0; padding-left:18px; font-size:.86rem; color:var(--ink)}
+  .legend li{margin:4px 0}
+  .legend b{font-family:ui-monospace,Consolas,monospace}
+  footer{margin-top:20px; color:var(--sub); font-size:.78rem}
+
+  @media (max-width:480px){
+    .grid{grid-template-columns:repeat(4,1fr); gap:4px}
+    .m{font-size:.8rem; min-height:34px}
+    .wrap{padding:24px 12px 48px}
+    .step{grid-template-columns:50px 1fr}
+  }
+  @media print{
+    body{background:#fff}
+    .wrap{max-width:none; padding:0}
+    .step{break-inside:avoid; border-color:#bbb}
+    .steps{gap:8px}
+    .body{padding:8px 12px 10px}
+    .m{min-height:30px}
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>시선</h1>
+    <p class="sub">예수전도단 · E Major · 4/4 — 진행 순서표 (반복 기호 풀이)</p>
+    <div class="meta">
+      <span class="chip">Key: E</span>
+      <span class="chip">4/4</span>
+      <span class="chip">총 80마디</span>
+      <span class="chip">B(후렴) 5회</span>
+    </div>
+    <div class="order">
+      <span class="lbl">원본 표기 순서</span>
+      <code>In4 – A1 – B – Inter4 – A2 – B – B – Inter8 – C – C – B – B</code>
+    </div>
+    <p class="note">아래는 위 순서 그대로 D.C. / D.S. / 1·2·3번 괄호를 전부 풀어 위→아래로만 읽으면 되게 정리한 것입니다. 멜로디·가사는 원본 악보를 함께 보세요.</p>
+  </header>
+
+  <div class="steps">
+
+    <article class="step">
+      <div class="rail"><span class="num">01</span><span class="badge">In</span></div>
+      <div class="body">
+        <div class="head"><h2>인트로</h2><span class="bars">4마디 · 밴드 인</span></div>
+        <div class="grid">
+          <span class="m">E/G♯</span><span class="m">C♯m<small>7</small></span><span class="m">A<small>(add2)</small></span><span class="m cont">A</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="step" data-fam="a">
+      <div class="rail"><span class="num">02</span><span class="badge">A1</span></div>
+      <div class="body">
+        <div class="head"><h2>1절</h2><span class="bars">8마디</span><span class="cue">눈을 들어 주를 보기 시작할 때…</span></div>
+        <div class="grid">
+          <span class="m">E</span><span class="m">E/G♯</span><span class="m">A</span><span class="m cont">A</span>
+          <span class="m">E/G♯</span><span class="m">C♯m<small>7</small></span><span class="m">A</span><span class="m cont">A</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="step" data-fam="b">
+      <div class="rail"><span class="num">03</span><span class="badge">B①</span></div>
+      <div class="body">
+        <div class="head"><h2>후렴 1번째</h2><span class="bars">8마디</span><span class="cue">시선을 주님께…</span></div>
+        <div class="grid">
+          <span class="m">E</span><span class="m">A/C♯</span><span class="m">B</span><span class="m">E</span>
+          <span class="m">E/G♯</span><span class="m">A</span><span class="m end first" data-tag="엔딩 1.">A/C♯</span><span class="m end">B</span>
+        </div>
+        <p class="route">원본의 D.C. 자리 → 인트로 리프를 간주로 (다음 칸)</p>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="rail"><span class="num">04</span><span class="badge">Int</span></div>
+      <div class="body">
+        <div class="head"><h2>간주 (Inter4)</h2><span class="bars">4마디 · 인트로와 동일</span></div>
+        <div class="grid">
+          <span class="m">E/G♯</span><span class="m">C♯m<small>7</small></span><span class="m">A<small>(add2)</small></span><span class="m cont">A</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="step" data-fam="a">
+      <div class="rail"><span class="num">05</span><span class="badge">A2</span></div>
+      <div class="body">
+        <div class="head"><h2>2절</h2><span class="bars">8마디</span><span class="cue">나를 변화시켜…</span></div>
+        <div class="grid">
+          <span class="m">E</span><span class="m">E/G♯</span><span class="m">A</span><span class="m cont">A</span>
+          <span class="m">E/G♯</span><span class="m">C♯m<small>7</small></span><span class="m">A</span><span class="m cont">A</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="step" data-fam="b">
+      <div class="rail"><span class="num">06</span><span class="badge">B②</span></div>
+      <div class="body">
+        <div class="head"><h2>후렴 2번째</h2><span class="bars">8마디</span></div>
+        <div class="grid">
+          <span class="m">E</span><span class="m">A/C♯</span><span class="m">B</span><span class="m">E</span>
+          <span class="m">E/G♯</span><span class="m">A</span><span class="m end first" data-tag="엔딩 2.">A/C♯ · B</span><span class="m end">E · B<small>7</small></span>
+        </div>
+        <p class="route">B7 턴어라운드 + “모든” 픽업 → 쉬지 않고 바로 다음 후렴</p>
+      </div>
+    </article>
+
+    <article class="step" data-fam="b">
+      <div class="rail"><span class="num">07</span><span class="badge">B③</span></div>
+      <div class="body">
+        <div class="head"><h2>후렴 3번째</h2><span class="bars">8마디</span></div>
+        <div class="grid">
+          <span class="m">E</span><span class="m">A/C♯</span><span class="m">B</span><span class="m">E</span>
+          <span class="m">E/G♯</span><span class="m">A</span><span class="m end first" data-tag="엔딩 3.">A/C♯</span><span class="m end">B</span>
+        </div>
+        <p class="route">→ 일렉기타 솔로 간주로</p>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="rail"><span class="num">08</span><span class="badge">Int</span></div>
+      <div class="body">
+        <div class="head"><h2>간주 (Inter8)</h2><span class="bars">8마디 · E.G solo, 4마디 ×2</span></div>
+        <div class="grid">
+          <span class="m">E/G♯</span><span class="m">C♯m<small>7</small></span><span class="m">A<small>(add2)</small></span><span class="m cont">A</span>
+          <span class="m">E/G♯</span><span class="m">C♯m<small>7</small></span><span class="m">A<small>(add2)</small></span><span class="m cont">A</span>
+        </div>
+        <p class="route">두 번째 바퀴 끝에 보컬 픽업 “주님의 영광” → C로</p>
+      </div>
+    </article>
+
+    <article class="step" data-fam="c">
+      <div class="rail"><span class="num">09</span><span class="badge">C①</span></div>
+      <div class="body">
+        <div class="head"><h2>C 1번째</h2><span class="bars">4마디</span><span class="cue">임하네…</span></div>
+        <div class="grid">
+          <span class="m">C♯m<small>7</small></span><span class="m">E/G♯</span><span class="m">A</span><span class="m end first" data-tag="1번 괄호">A</span>
+        </div>
+        <p class="route">끝에 다시 “주님의 영광” 픽업 → C 반복</p>
+      </div>
+    </article>
+
+    <article class="step" data-fam="c">
+      <div class="rail"><span class="num">10</span><span class="badge">C②</span></div>
+      <div class="body">
+        <div class="head"><h2>C 2번째</h2><span class="bars">4마디</span></div>
+        <div class="grid">
+          <span class="m">C♯m<small>7</small></span><span class="m">E/G♯</span><span class="m">A</span><span class="m end first" data-tag="2번 괄호">A</span>
+        </div>
+        <p class="route">원본의 D.S. 자리 → 세뇨(후렴 처음)로, “모든” 픽업</p>
+      </div>
+    </article>
+
+    <article class="step" data-fam="b">
+      <div class="rail"><span class="num">11</span><span class="badge">B④</span></div>
+      <div class="body">
+        <div class="head"><h2>후렴 4번째</h2><span class="bars">8마디</span></div>
+        <div class="grid">
+          <span class="m">E</span><span class="m">A/C♯</span><span class="m">B</span><span class="m">E</span>
+          <span class="m">E/G♯</span><span class="m">A</span><span class="m end first" data-tag="엔딩 4.(=2.)">A/C♯ · B</span><span class="m end">E · B<small>7</small></span>
+        </div>
+        <p class="route">B7 턴어라운드 + “모든” 픽업 → 마지막 후렴으로</p>
+      </div>
+    </article>
+
+    <article class="step" data-fam="b">
+      <div class="rail"><span class="num">12</span><span class="badge">B⑤</span></div>
+      <div class="body">
+        <div class="head"><h2>후렴 5번째 (마지막)</h2><span class="bars">8마디</span></div>
+        <div class="grid">
+          <span class="m">E</span><span class="m">A/C♯</span><span class="m">B</span><span class="m">E</span>
+          <span class="m">E/G♯</span><span class="m">A</span><span class="m end first" data-tag="엔딩 3.">A/C♯</span><span class="m end">B</span>
+        </div>
+        <p class="route endsong">🎵 곡 끝 (Fine)</p>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="legend">
+    <h3>원본 반복 기호 해석</h3>
+    <ul>
+      <li><b>엔딩 1. + D.C.</b> — 처음으로 돌아가 인트로 4마디를 간주(Inter4)로 쓰고 2절 진입</li>
+      <li><b>엔딩 2.4. + D.S.</b> — 세뇨(𝄋, 후렴 첫 마디)로 돌아가 후렴 연속 반복 (2·4번째 후렴)</li>
+      <li><b>엔딩 3.</b> — 3번째 후렴에서는 간주(솔로)로 진행, 5번째(마지막)에서는 곡 종료</li>
+      <li><b>C 2번 괄호 + D.S.</b> — C 두 번 후 세뇨로 돌아가 후렴 4·5번째 진행</li>
+    </ul>
+  </div>
+
+  <footer>코드·구성 정리용 차트입니다. 멜로디와 가사는 원본 악보(ⓒ Onnuri Vision)를 참조하세요.</footer>
+</div>
