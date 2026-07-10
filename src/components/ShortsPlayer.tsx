@@ -170,7 +170,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
           className={`relative aspect-[9/16] overflow-hidden bg-black ${
             fsMode
               ? ''
-              : 'w-[300px] sm:w-[340px] rounded-3xl shadow-2xl shadow-amber-900/30 ring-1 ring-white/10'
+              : 'w-[300px] sm:w-[340px] rounded-[1.75rem] shadow-[0_32px_80px_-20px_rgba(251,191,36,0.15),0_24px_60px_-16px_rgba(0,0,0,0.9)] ring-1 ring-white/10'
           }`}
           style={fsMode ? {height: 'min(100dvh, calc(100dvw * 16 / 9))'} : undefined}
         >
@@ -334,7 +334,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
           type="button"
           onClick={playing ? pause : play}
           disabled={recording}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold text-sm disabled:opacity-40 transition-colors"
+          className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-gradient-to-b from-amber-300 to-amber-400 hover:from-amber-200 hover:to-amber-300 text-stone-950 font-semibold text-sm shadow-lg shadow-amber-500/20 disabled:opacity-40 transition-all duration-300"
         >
           {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           {playing ? '일시정지' : '재생'}
@@ -343,7 +343,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
           type="button"
           onClick={restart}
           disabled={recording}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-stone-700 hover:bg-stone-600 text-white font-semibold text-sm disabled:opacity-40 transition-colors"
+          className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-stone-200 font-semibold text-sm disabled:opacity-40 transition-all duration-300"
         >
           <RotateCcw className="w-4 h-4" />
           처음부터
@@ -351,7 +351,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
         <button
           type="button"
           onClick={handleSrtDownload}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-stone-700 hover:bg-stone-600 text-white font-semibold text-sm transition-colors"
+          className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-stone-200 font-semibold text-sm transition-all duration-300"
         >
           <Download className="w-4 h-4" />
           자막(SRT)
@@ -364,7 +364,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
           <button
             type="button"
             onClick={() => stopRef.current?.()}
-            className="w-full max-w-[340px] flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold transition-all"
+            className="w-full max-w-[340px] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-extrabold shadow-xl shadow-red-600/25 transition-all duration-300"
           >
             <Square className="w-4 h-4" fill="currentColor" />
             녹화 중... {secondsLeft}초 남음 (누르면 여기까지 저장)
@@ -374,7 +374,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
             type="button"
             onClick={handleRecord}
             disabled={!ready}
-            className="w-full max-w-[340px] flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-extrabold disabled:opacity-50 transition-all"
+            className="w-full max-w-[340px] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-rose-400 via-rose-500 to-amber-500 bg-[length:200%_100%] bg-left hover:bg-right text-white font-extrabold shadow-xl shadow-rose-500/20 disabled:opacity-45 disabled:shadow-none transition-all duration-500"
           >
             <Video className="w-5 h-5" />
             자막 입힌 영상(MP4) 만들기
@@ -385,7 +385,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
           type="button"
           onClick={enterFsMode}
           disabled={!ready}
-          className="w-full max-w-[340px] flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-extrabold disabled:opacity-50 transition-all"
+          className="w-full max-w-[340px] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-rose-400 via-rose-500 to-amber-500 bg-[length:200%_100%] bg-left hover:bg-right text-white font-extrabold shadow-xl shadow-rose-500/20 disabled:opacity-45 disabled:shadow-none transition-all duration-500"
         >
           <Smartphone className="w-5 h-5" />
           자막 입힌 영상 만들기 (화면 녹화)

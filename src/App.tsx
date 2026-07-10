@@ -1,4 +1,5 @@
-import {Clapperboard, Eye, EyeOff, KeyRound, Link2, Loader2, Wand2} from 'lucide-react';
+import {Eye, EyeOff, KeyRound, Link2, Loader2, Sparkles, Wand2} from 'lucide-react';
+import {motion} from 'motion/react';
 import {useEffect, useState} from 'react';
 import Footer from './components/Footer';
 import HighlightList from './components/HighlightList';
@@ -22,6 +23,17 @@ const LOADING_MESSAGES = [
 ];
 
 const API_KEY_STORAGE = 'gemini_api_key';
+
+const INPUT_CLASS =
+  'w-full pl-12 pr-4 py-4 rounded-2xl bg-black/40 border border-white/10 text-white placeholder-stone-600 outline-none transition-all duration-300 focus:border-amber-300/50 focus:bg-black/60 focus:shadow-[0_0_0_4px_rgba(251,191,36,0.08)]';
+
+function StepBadge({n}: {n: number}) {
+  return (
+    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400/15 ring-1 ring-amber-400/30 text-amber-300 text-xs font-bold">
+      {n}
+    </span>
+  );
+}
 
 export default function App() {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(API_KEY_STORAGE) ?? '');
@@ -84,32 +96,59 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 text-white">
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-10 sm:py-14">
+    <div className="relative min-h-screen flex flex-col text-stone-50 overflow-x-clip">
+      {/* 배경 장식: 은은한 골드 광원 */}
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[640px] h-[480px] rounded-full bg-amber-400/[0.07] blur-[120px]" />
+        <div className="absolute bottom-0 -left-40 w-[480px] h-[400px] rounded-full bg-rose-500/[0.04] blur-[120px]" />
+      </div>
+
+      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-14 sm:py-20">
         {/* 헤더 */}
-        <header className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-400/15 ring-1 ring-amber-400/30 mb-4">
-            <Clapperboard className="w-7 h-7 text-amber-400" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight break-keep">
-            설교 쇼츠 <span className="text-amber-400">자동 생성기</span>
+        <motion.header
+          initial={{opacity: 0, y: 16}}
+          animate={{opacity: 1, y: 0}}
+          transition={{duration: 0.6, ease: 'easeOut'}}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300/20 bg-amber-400/[0.06] text-amber-200/90 text-xs font-medium tracking-wide mb-6">
+            <Sparkles className="w-3.5 h-3.5" />
+            AI 설교 미디어 도구
+          </span>
+          <h1 className="font-serif text-4xl sm:text-5xl font-black tracking-tight leading-tight break-keep">
+            설교의 은혜를
+            <br />
+            <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">
+              쇼츠 한 편에
+            </span>
           </h1>
-          <p className="mt-3 text-stone-400 leading-relaxed break-keep">
+          <p className="mt-5 text-stone-400 leading-relaxed break-keep">
             설교 유튜브 링크를 넣으면 AI가 하이라이트를 찾아
             <br className="hidden sm:block" />
             자막이 들어간 쇼츠를 만들어 드립니다.
           </p>
-        </header>
+        </motion.header>
 
         {/* 입력 영역 */}
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-5 sm:p-7 space-y-5">
+        <motion.section
+          initial={{opacity: 0, y: 20}}
+          animate={{opacity: 1, y: 0}}
+          transition={{duration: 0.6, delay: 0.15, ease: 'easeOut'}}
+          className="rounded-[2rem] border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.8)] p-6 sm:p-9 space-y-7"
+        >
           <div>
-            <label htmlFor="api-key" className="block text-sm font-semibold text-stone-300 mb-2">
-              1. Gemini API 키{' '}
-              {apiKey.trim() && <span className="text-emerald-400 font-normal">✓ 저장됨</span>}
+            <label
+              htmlFor="api-key"
+              className="flex items-center gap-2.5 text-sm font-semibold text-stone-200 mb-3"
+            >
+              <StepBadge n={1} />
+              Gemini API 키
+              {apiKey.trim() && (
+                <span className="text-emerald-400/90 text-xs font-medium">✓ 저장됨</span>
+              )}
             </label>
             <div className="relative">
-              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+              <KeyRound className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
               <input
                 id="api-key"
                 type={showKey ? 'text' : 'password'}
@@ -117,24 +156,24 @@ export default function App() {
                 onChange={(e) => handleApiKeyChange(e.target.value)}
                 placeholder="AIza..."
                 autoComplete="off"
-                className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-stone-950/70 border border-white/10 text-white placeholder-stone-600 outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 transition-all"
+                className={`${INPUT_CLASS} pr-12`}
               />
               <button
                 type="button"
                 aria-label={showKey ? '키 숨기기' : '키 보기'}
                 onClick={() => setShowKey((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-500 hover:text-stone-300 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-stone-500 hover:text-stone-300 transition-colors"
               >
                 {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="mt-1.5 text-xs text-stone-500 break-keep">
+            <p className="mt-2 text-xs text-stone-500 leading-relaxed break-keep">
               한 번 입력하면 이 브라우저에 저장됩니다. 키가 없으면{' '}
               <a
                 href="https://aistudio.google.com/apikey"
                 target="_blank"
                 rel="noreferrer"
-                className="text-amber-400/90 hover:text-amber-300 underline underline-offset-2"
+                className="text-amber-300/90 hover:text-amber-200 underline underline-offset-4 decoration-amber-300/30 transition-colors"
               >
                 여기서 무료 발급
               </a>
@@ -143,11 +182,15 @@ export default function App() {
           </div>
 
           <div>
-            <label htmlFor="youtube-url" className="block text-sm font-semibold text-stone-300 mb-2">
-              2. 설교 유튜브 링크
+            <label
+              htmlFor="youtube-url"
+              className="flex items-center gap-2.5 text-sm font-semibold text-stone-200 mb-3"
+            >
+              <StepBadge n={2} />
+              설교 유튜브 링크
             </label>
             <div className="relative">
-              <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+              <Link2 className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
               <input
                 id="youtube-url"
                 type="url"
@@ -155,23 +198,26 @@ export default function App() {
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !loading && handleAnalyze()}
                 placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-stone-950/70 border border-white/10 text-white placeholder-stone-600 outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 transition-all"
+                className={INPUT_CLASS}
               />
             </div>
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-stone-300 mb-2">3. 쇼츠 길이</p>
-            <div className="grid grid-cols-3 gap-2">
+            <p className="flex items-center gap-2.5 text-sm font-semibold text-stone-200 mb-3">
+              <StepBadge n={3} />
+              쇼츠 길이
+            </p>
+            <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-2xl bg-black/40 border border-white/[0.06]">
               {DURATION_OPTIONS.map((opt) => (
                 <button
                   key={opt.seconds}
                   type="button"
                   onClick={() => setDuration(opt.seconds)}
-                  className={`py-3 rounded-xl font-bold transition-all ${
+                  className={`py-3 rounded-xl font-bold transition-all duration-300 ${
                     duration === opt.seconds
-                      ? 'bg-amber-400 text-stone-900 shadow-lg shadow-amber-900/30'
-                      : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                      ? 'bg-gradient-to-b from-amber-300 to-amber-400 text-stone-950 shadow-lg shadow-amber-500/25'
+                      : 'text-stone-400 hover:text-stone-200 hover:bg-white/[0.04]'
                   }`}
                 >
                   {opt.label}
@@ -184,7 +230,7 @@ export default function App() {
             type="button"
             onClick={handleAnalyze}
             disabled={loading || !url.trim()}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 text-stone-900 font-extrabold text-lg hover:from-amber-400 hover:to-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="group w-full flex items-center justify-center gap-2.5 py-4.5 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300 bg-[length:200%_100%] bg-left hover:bg-right text-stone-950 font-extrabold text-lg shadow-xl shadow-amber-500/20 hover:shadow-amber-400/30 disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-500"
           >
             {loading ? (
               <>
@@ -193,35 +239,49 @@ export default function App() {
               </>
             ) : (
               <>
-                <Wand2 className="w-5 h-5" />
+                <Wand2 className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
                 하이라이트 찾아 쇼츠 만들기
               </>
             )}
           </button>
 
           {loading && (
-            <p className="text-center text-sm text-amber-300/90 animate-pulse break-keep">
-              {LOADING_MESSAGES[loadingStep]}
-              <span className="block mt-1 text-stone-500 text-xs">
-                영상 길이에 따라 1~3분 정도 걸릴 수 있습니다.
-              </span>
-            </p>
+            <div className="text-center space-y-2">
+              <p className="text-sm text-amber-200/90 animate-pulse break-keep">
+                {LOADING_MESSAGES[loadingStep]}
+              </p>
+              <p className="text-stone-500 text-xs">영상 길이에 따라 1~3분 정도 걸릴 수 있습니다.</p>
+            </div>
           )}
 
           {error && (
-            <p className="text-center text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3 break-keep">
+            <p className="text-center text-sm text-red-300/90 bg-red-500/[0.08] border border-red-400/20 rounded-2xl px-5 py-3.5 break-keep">
               {error}
             </p>
           )}
-        </section>
+        </motion.section>
 
         {/* 결과 영역 */}
         {result && videoId && (
-          <section className="mt-10 space-y-8">
-            <h2 className="text-center text-lg font-bold text-stone-200 break-keep">
-              🎬 {result.videoTitle}
-            </h2>
-            <div className="grid gap-8 lg:grid-cols-[1fr_360px] items-start">
+          <motion.section
+            initial={{opacity: 0, y: 24}}
+            animate={{opacity: 1, y: 0}}
+            transition={{duration: 0.6, ease: 'easeOut'}}
+            className="mt-14 space-y-9"
+          >
+            <div className="text-center space-y-3">
+              <div className="flex items-center justify-center gap-4">
+                <span className="h-px w-12 bg-gradient-to-r from-transparent to-amber-300/40" />
+                <span className="text-amber-300/80 text-xs font-semibold tracking-[0.2em] uppercase">
+                  Result
+                </span>
+                <span className="h-px w-12 bg-gradient-to-l from-transparent to-amber-300/40" />
+              </div>
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-100 break-keep">
+                {result.videoTitle}
+              </h2>
+            </div>
+            <div className="grid gap-10 lg:grid-cols-[1fr_360px] items-start">
               <HighlightList
                 highlights={result.highlights}
                 selectedIndex={selectedIndex}
@@ -232,7 +292,7 @@ export default function App() {
                 highlight={result.highlights[selectedIndex]}
               />
             </div>
-          </section>
+          </motion.section>
         )}
       </main>
 
