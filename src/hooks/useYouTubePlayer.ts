@@ -159,6 +159,12 @@ export function useYouTubePlayer({
     playerRef.current?.seekTo(rangeRef.current.start, true);
     playerRef.current?.playVideo();
   };
+  /** 특정 시점(영상 전체 기준 초)으로 이동해 재생 */
+  const previewAt = (seconds: number) => {
+    playerRef.current?.seekTo(seconds, true);
+    setCurrentTime(seconds);
+    playerRef.current?.playVideo();
+  };
 
-  return {containerRef, ready, playing, currentTime, play, pause, restart};
+  return {containerRef, ready, playing, currentTime, play, pause, restart, previewAt};
 }

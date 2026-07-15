@@ -9,15 +9,24 @@ import {
   Video,
   X,
 } from 'lucide-react';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
 import {useYouTubePlayer} from '../hooks/useYouTubePlayer';
 import {isRecordingSupported, startShortsRecording} from '../services/recorder';
 import type {Highlight} from '../types';
 import {buildSrt, downloadTextFile, formatTime} from '../utils/youtube';
 
+export interface PlayerControl {
+  /** 특정 시점(영상 전체 기준 초)부터 재생 */
+  previewAt: (seconds: number) => void;
+}
+
 interface Props {
   videoId: string;
   highlight: Highlight;
+  /** 재생 위치를 상위(자막 편집기)로 전달 */
+  onTimeUpdate?: (seconds: number) => void;
+  /** 상위에서 플레이어를 제어할 수 있게 하는 ref */
+  controlRef?: RefObject<PlayerControl | null>;
 }
 
 type FsState = 'ready' | 'countdown' | 'playing' | 'done';
@@ -30,7 +39,7 @@ const IS_IOS =
  * 재생 시간에 맞춰 자막을 오버레이하는 쇼츠 미리보기 플레이어.
  * PC: 탭 캡처(getDisplayMedia) 녹화 / 모바일: 전체화면 + 기기 화면 녹화 안내.
  */
-export default function ShortsPlayer({videoId, highlight}: Props) {
+export default function ShortsPlayer({videoId, highlight, onTimeUpdate, controlRef}: Props) {
   // 모바일 전체화면 녹화 모드
   const [fsMode, setFsMode] = useState(false);
   const [fsState, setFsState] = useState<FsState>('ready');
@@ -38,7 +47,7 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
   const fsWrapperRef = useRef<HTMLDivElement>(null);
   const countdownTimer = useRef(0);
 
-  const {containerRef, ready, playing, currentTime, play, pause, restart} =
+  const {containerRef, ready, playing, currentTime, play, pause, restart, previewAt} =
     useYouTubePlayer({
       videoId,
       startSeconds: highlight.startSeconds,
@@ -46,6 +55,16 @@ export default function ShortsPlayer({videoId, highlight}: Props) {
       loop: !fsMode,
       onSegmentEnd: () => setFsState('done'),
     });
+
+  // 재생 위치를 자막 편집기로 전달
+  useEffect(() => {
+    onTimeUpdate?.(currentTime);
+  }, [currentTime, onTimeUpdate]);
+
+  // 상위에서 특정 시점 재생을 호출할 수 있게 등록
+  useEffect(() => {
+    if (controlRef) controlRef.current = {previewAt};
+  });
 
   // PC 탭 캡처 녹화
   const frameRef = useRef<HTMLDivElement>(null);

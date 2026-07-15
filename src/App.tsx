@@ -1,11 +1,12 @@
 import {Eye, EyeOff, KeyRound, Link2, Loader2, Sparkles, Wand2} from 'lucide-react';
 import {motion} from 'motion/react';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import Footer from './components/Footer';
 import HighlightList from './components/HighlightList';
-import ShortsPlayer from './components/ShortsPlayer';
+import ShortsPlayer, {type PlayerControl} from './components/ShortsPlayer';
+import SubtitleEditor from './components/SubtitleEditor';
 import {analyzeSermon} from './services/gemini';
-import type {AnalysisResult, DurationOption, DurationSeconds} from './types';
+import type {AnalysisResult, DurationOption, DurationSeconds, SubtitleLine} from './types';
 import {extractVideoId} from './utils/youtube';
 
 const DURATION_OPTIONS: DurationOption[] = [
@@ -46,6 +47,19 @@ export default function App() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [videoId, setVideoId] = useState<string | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [previewTime, setPreviewTime] = useState(0);
+  const playerControlRef = useRef<PlayerControl | null>(null);
+
+  // 자막 편집 결과를 결과 상태에 반영 (미리보기·녹화·SRT에 모두 적용됨)
+  const updateSubtitles = (index: number, subtitles: SubtitleLine[]) => {
+    setResult((prev) => {
+      if (!prev) return prev;
+      const highlights = prev.highlights.map((h, i) =>
+        i === index ? {...h, subtitles} : h,
+      );
+      return {...prev, highlights};
+    });
+  };
 
   // 분석 중 안내 문구를 주기적으로 교체
   useEffect(() => {
@@ -287,10 +301,20 @@ export default function App() {
                 selectedIndex={selectedIndex}
                 onSelect={setSelectedIndex}
               />
-              <ShortsPlayer
-                videoId={videoId}
-                highlight={result.highlights[selectedIndex]}
-              />
+              <div className="space-y-4 lg:sticky lg:top-8">
+                <ShortsPlayer
+                  videoId={videoId}
+                  highlight={result.highlights[selectedIndex]}
+                  onTimeUpdate={setPreviewTime}
+                  controlRef={playerControlRef}
+                />
+                <SubtitleEditor
+                  highlight={result.highlights[selectedIndex]}
+                  currentTime={previewTime}
+                  onChange={(subs) => updateSubtitles(selectedIndex, subs)}
+                  onPreview={(sec) => playerControlRef.current?.previewAt(sec)}
+                />
+              </div>
             </div>
           </motion.section>
         )}
