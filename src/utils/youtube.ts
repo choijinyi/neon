@@ -47,6 +47,15 @@ export function buildSrt(subtitles: SubtitleLine[], segmentStart: number): strin
     .join('\n\n');
 }
 
+/** 하이라이트 제목을 안전한 다운로드 파일 이름으로 바꾼다. (금지 문자 제거, 공백 → _) */
+export function toSafeFilename(title: string): string {
+  const cleaned = title
+    .replace(/[\\/:*?"<>|]/g, '')
+    .trim()
+    .replace(/\s+/g, '_');
+  return cleaned || 'shorts';
+}
+
 export function downloadTextFile(filename: string, content: string) {
   const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
   const url = URL.createObjectURL(blob);

@@ -13,7 +13,7 @@ import {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 
 import {useYouTubePlayer} from '../hooks/useYouTubePlayer';
 import {isRecordingSupported, startShortsRecording} from '../services/recorder';
 import type {Highlight} from '../types';
-import {buildSrt, downloadTextFile, formatTime} from '../utils/youtube';
+import {buildSrt, downloadTextFile, formatTime, toSafeFilename} from '../utils/youtube';
 
 export interface PlayerControl {
   /** 특정 시점(영상 전체 기준 초)부터 재생 */
@@ -132,7 +132,7 @@ export default function ShortsPlayer({videoId, highlight, onTimeUpdate, controlR
 
   const handleSrtDownload = () => {
     const srt = buildSrt(highlight.subtitles, highlight.startSeconds);
-    downloadTextFile(`${highlight.title.replace(/\s+/g, '_')}.srt`, srt);
+    downloadTextFile(`${toSafeFilename(highlight.title)}.srt`, srt);
   };
 
   const handleRecord = async () => {
@@ -156,7 +156,7 @@ export default function ShortsPlayer({videoId, highlight, onTimeUpdate, controlR
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${highlight.title.replace(/\s+/g, '_')}.${extension}`;
+      a.download = `${toSafeFilename(highlight.title)}.${extension}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
