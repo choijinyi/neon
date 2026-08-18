@@ -1,8 +1,9 @@
-import {GoogleGenAI} from '@google/genai';
+import {GoogleGenAI, MediaResolution} from '@google/genai';
 import type {VercelRequest, VercelResponse} from '@vercel/node';
 import {
   ANALYSIS_MODEL,
   buildPrompt,
+  mapGeminiError,
   parseAnalysis,
   responseSchema,
 } from './_lib/analysisCore.js';
@@ -59,6 +60,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       config: {
         responseMimeType: 'application/json',
         responseSchema,
+        // 영상 프레임 토큰을 줄여 긴 설교(약 3시간까지)도 분석 가능하게 한다.
+        // 자막 받아쓰기는 오디오 기반이라 화질을 낮춰도 영향이 없다.
+        mediaResolution: MediaResolution.MEDIA_RESOLUTION_LOW,
       },
     });
 
@@ -70,10 +74,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json(parseAnalysis(text, duration as DurationSeconds));
   } catch (e) {
     console.error('analyze error:', e);
-    const message =
-      e instanceof Error && e.message.includes('하이라이트')
-        ? e.message
-        : '영상 분석에 실패했습니다. 공개된 유튜브 영상인지 확인하고 다시 시도해 주세요.';
+    const raw = e instanceof Error ? e.message : '';
+    const message = raw.includes('하이라이트')
+      ? raw
+      : (mapGeminiError(raw) ??
+        '영상 분석에 실패했습니다. 공개된 유튜브 영상인지 확인하고 다시 시도해 주세요.');
     res.status(502).json({error: message});
   }
 }

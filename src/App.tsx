@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import HighlightList from './components/HighlightList';
 import ShortsPlayer, {type PlayerControl} from './components/ShortsPlayer';
 import SubtitleEditor from './components/SubtitleEditor';
+import {mapGeminiError} from '../api/_lib/analysisCore';
 import {analyzeSermon} from './services/gemini';
 import type {AnalysisResult, DurationOption, DurationSeconds, SubtitleLine} from './types';
 import {extractVideoId} from './utils/youtube';
@@ -97,9 +98,12 @@ export default function App() {
     } catch (e) {
       console.error(e);
       const msg = e instanceof Error ? e.message : '';
+      const mapped = mapGeminiError(msg);
       if (/API key|API_KEY|PERMISSION_DENIED/i.test(msg)) {
         setError('API 키가 올바르지 않습니다. 키를 다시 확인해 주세요.');
-      } else if (msg.includes('하이라이트') || msg.includes('API 키')) {
+      } else if (mapped) {
+        setError(mapped);
+      } else if (msg.includes('하이라이트') || msg.includes('API 키') || msg.includes('실패했습니다') || msg.includes('주세요')) {
         setError(msg);
       } else {
         setError('영상 분석에 실패했습니다. 공개된 유튜브 영상인지 확인하고 다시 시도해 주세요.');

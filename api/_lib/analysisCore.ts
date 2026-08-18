@@ -76,6 +76,20 @@ export function buildPrompt(duration: DurationSeconds): string {
 응답은 한국어로 작성하세요.`;
 }
 
+/** Gemini 오류 메시지를 사용자가 이해할 수 있는 한국어 안내로 바꾼다. 매핑 불가면 null */
+export function mapGeminiError(message: string): string | null {
+  if (/token count|exceeds the maximum|too long/i.test(message)) {
+    return '영상이 너무 깁니다. 약 3시간 이하의 영상으로 시도해 주세요.';
+  }
+  if (/RESOURCE_EXHAUSTED|quota|rate limit/i.test(message)) {
+    return '오늘 사용할 수 있는 무료 분석량을 모두 썼습니다. 잠시 후(또는 내일) 다시 시도해 주세요.';
+  }
+  if (/not (?:found|accessible)|private|unavailable|permission to access/i.test(message)) {
+    return '영상을 불러올 수 없습니다. 공개(전체 공개) 상태의 유튜브 영상인지 확인해 주세요.';
+  }
+  return null;
+}
+
 function sanitizeHighlight(h: Highlight, duration: DurationSeconds): Highlight {
   const startSeconds = Math.max(0, h.startSeconds);
   // 모델이 길이 규칙을 어겨도 선택한 길이를 넘지 않게 자른다.

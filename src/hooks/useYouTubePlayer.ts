@@ -75,6 +75,7 @@ export function useYouTubePlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(startSeconds);
   const rangeRef = useRef({start: startSeconds, end: endSeconds, loop, onSegmentEnd});
@@ -112,9 +113,23 @@ export function useYouTubePlayer({
             }
             setPlaying(e.data === window.YT.PlayerState.PLAYING);
           },
+          onError: (e: {data: number}) => {
+            if (cancelled) return;
+            // https://developers.google.com/youtube/iframe_api_reference#onError
+            if (e.data === 101 || e.data === 150) {
+              setLoadError(
+                '영상 소유자가 외부 사이트 재생(임베드)을 막아 두어 미리보기를 할 수 없습니다. 유튜브 스튜디오에서 "퍼가기 허용"을 켜거나 다른 영상을 이용해 주세요.',
+              );
+            } else if (e.data === 100) {
+              setLoadError('영상을 찾을 수 없습니다. 삭제되었거나 비공개 영상입니다.');
+            } else {
+              setLoadError('영상을 재생할 수 없습니다. 다른 영상으로 시도해 주세요.');
+            }
+          },
         },
       });
     });
+    setLoadError(null);
     return () => {
       cancelled = true;
       setReady(false);
@@ -166,5 +181,5 @@ export function useYouTubePlayer({
     playerRef.current?.playVideo();
   };
 
-  return {containerRef, ready, playing, currentTime, play, pause, restart, previewAt};
+  return {containerRef, ready, loadError, playing, currentTime, play, pause, restart, previewAt};
 }

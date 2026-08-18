@@ -1,4 +1,4 @@
-import {GoogleGenAI} from '@google/genai';
+import {GoogleGenAI, MediaResolution} from '@google/genai';
 import type {AnalysisResult, DurationSeconds} from '../types';
 import {
   ANALYSIS_MODEL,
@@ -77,6 +77,9 @@ async function clientAnalyze(
     config: {
       responseMimeType: 'application/json',
       responseSchema,
+      // 영상 프레임 토큰을 줄여 긴 설교(약 3시간까지)도 분석 가능하게 한다.
+      // 자막 받아쓰기는 오디오 기반이라 화질을 낮춰도 영향이 없다.
+      mediaResolution: MediaResolution.MEDIA_RESOLUTION_LOW,
     },
   });
 

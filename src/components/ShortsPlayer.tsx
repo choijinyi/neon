@@ -47,7 +47,7 @@ export default function ShortsPlayer({videoId, highlight, onTimeUpdate, controlR
   const fsWrapperRef = useRef<HTMLDivElement>(null);
   const countdownTimer = useRef(0);
 
-  const {containerRef, ready, playing, currentTime, play, pause, restart, previewAt} =
+  const {containerRef, ready, loadError, playing, currentTime, play, pause, restart, previewAt} =
     useYouTubePlayer({
       videoId,
       startSeconds: highlight.startSeconds,
@@ -198,9 +198,15 @@ export default function ShortsPlayer({videoId, highlight, onTimeUpdate, controlR
             <div ref={containerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
           </div>
 
-          {!ready && (
+          {!ready && !loadError && (
             <div className="absolute inset-0 flex items-center justify-center text-stone-400 text-sm">
               영상 불러오는 중...
+            </div>
+          )}
+
+          {loadError && (
+            <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+              <p className="text-red-300/90 text-sm leading-relaxed break-keep">{loadError}</p>
             </div>
           )}
 
